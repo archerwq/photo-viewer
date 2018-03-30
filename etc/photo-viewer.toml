@@ -1,0 +1,14 @@
+http_addr = ":5120"
+static_resource = "/Users/qiangwang/dev/go_workspace/src/github.com/archerwq/photo-viewer/static"
+
+[database]
+host = "127.0.0.1"
+port = 3306
+user = "qwang"
+password = "qwer1234"
+db_name = "photo"
+max_idle_conns = 5
+max_conns = 10
+
+[es]
+endpoint = "http://127.0.0.1:9200"
