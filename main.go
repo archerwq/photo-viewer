@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/archerwq/photo-viewer/conf"
+	"github.com/archerwq/photo-viewer/dao"
 	. "github.com/archerwq/photo-viewer/pvlog"
 	"github.com/archerwq/photo-viewer/server"
 )
@@ -19,14 +20,18 @@ func main() {
 	PVLog.Println("starting...")
 	config := loadConfig()
 
+	err := dao.InitManager(config)
+	if err != nil {
+		PVLog.Fatal(err.Error())
+	}
+	defer dao.CleanManager()
+
 	server := server.New(config)
 	server.Run()
+	defer server.Close()
 
 	wait()
-
-	fmt.Println("shuting down...")
-	server.Close()
-	PVLog.Println("stopped!")
+	PVLog.Println("shuting down...")
 }
 
 func echoHandler(w http.ResponseWriter, r *http.Request) {

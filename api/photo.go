@@ -58,11 +58,11 @@ func parseParams(r *http.Request) *quryParams {
 	if params["limit"] != nil {
 		l, err := strconv.Atoi(params["limit"][0])
 		if err != nil {
-			l = 100
+			l = 500
 		}
 		qp.limit = l
 	} else {
-		qp.limit = 100
+		qp.limit = 500
 	}
 	return qp
 }
@@ -71,13 +71,7 @@ func parseParams(r *http.Request) *quryParams {
 func QueryPhotos(w http.ResponseWriter, r *http.Request) {
 	quryParams := parseParams(r)
 
-	photoDao, err := dao.NewPhotoDao()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	photos, err := photoDao.QueryPhotos(quryParams.lat, quryParams.lon, quryParams.radius,
+	photos, err := dao.Manager.PhotoDao.QueryPhotos(quryParams.lat, quryParams.lon, quryParams.radius,
 		quryParams.keywords, quryParams.startTime, quryParams.endTime, quryParams.offset, quryParams.limit)
 
 	js, err := json.Marshal(map[string]interface{}{

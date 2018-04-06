@@ -2,12 +2,14 @@ package dao
 
 import (
 	"testing"
+
+	"github.com/archerwq/photo-viewer/conf"
 )
 
 func TestQueryPhotos(t *testing.T) {
-	photoDao, err := New()
+	photoDao, err := NewPhotoDao(conf.ESConfig{"http://127.0.0.1:9200"})
 	if err != nil {
-		t.Errorf("failed to create es client")
+		t.Errorf("failed to create es client: %v", err)
 		return
 	}
 

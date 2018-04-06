@@ -2,11 +2,13 @@ package dao
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/archerwq/photo-viewer/conf"
 
 	"github.com/archerwq/photo-viewer/model"
 	"github.com/olivere/elastic"
@@ -160,8 +162,8 @@ type PhotoDao struct {
 	client *elastic.Client
 }
 
-func NewPhotoDao() (*PhotoDao, error) {
-	c, err := elastic.NewClient()
+func NewPhotoDao(config conf.ESConfig) (*PhotoDao, error) {
+	c, err := elastic.NewClient(elastic.SetURL(config.Endpoint))
 	if err != nil {
 		return nil, err
 	}
@@ -170,10 +172,29 @@ func NewPhotoDao() (*PhotoDao, error) {
 	}, nil
 }
 
+func (p *PhotoDao) GetPhoto(sha1 string) (*model.Photo, error) {
+	result, err := p.client.Get().
+		Index("files").
+		Type("photo").
+		Id(sha1).
+		Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if result.Found {
+		var photo model.Photo
+		err := json.Unmarshal(*result.Source, &photo)
+		if err != nil {
+			return nil, err
+		}
+		return &photo, nil
+	}
+	return nil, nil
+}
+
 // QueryPhotos return photos (order by time desc) qualify the given conditions.
 func (p *PhotoDao) QueryPhotos(lat, lon string, radius float64, keywords, startTime, endTime string, from, size int) ([]model.Photo, error) {
 	queryStr := genQueryStr(lat, lon, radius, keywords, startTime, endTime, from, size)
-	fmt.Println(queryStr)
 
 	searchResult, err := p.client.Search().
 		Index("files").
@@ -247,4 +268,8 @@ func genQueryStr(lat, lon string, radius float64, keywords, startTime, endTime s
 	}
 
 	return queryStr
+}
+
+func (p *PhotoDao) ClearUp() {
+	p.client.Stop()
 }

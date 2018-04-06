@@ -1,73 +1,11 @@
-<html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-	<style type="text/css">
-		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
-		#allmap{width:100%;height:500px;}
-		p{margin-left:5px; font-size:14px;}
-	</style>
-	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=qUbEEgRekRl3tzZychxfkUExvYTss2OX"></script>
-	<title>Photo Viewer</title>
-</head>
-<body>
-    <div id="search">
-        <div>Place <input type="text" id="search_place"> <button type="button" onclick="searchMap()">Locate</button></div>
-        Lat <input type="text" id="search_lat"> Lon <input type="text" id="search_lon"> <br>
-        Radius <input type="text" id="search_radius" value="2"> km <br>
-        Keywords <input type="text" id="search_keywords"><br>
-        Time Range <input type="date" id="search_time_start"> - <input type="date" id="search_time_end"><br>
-        <input type="submit" onclick="query()">
+<div>
+    <img src="data:{{.ImageType}};base64,{{.ImageData}}" height="100%" width="100%">
+    <div id="ugi">
+        <a href="javascript:void(0)" onclick="document.getElementById('image_view').style.display='none';document.getElementById('image_fade').style.display='none'">Close</a>
+        <input type="hidden" id="image_sha1" value="{{.ImageSha1}}"><br>
+        <span id="tags">{{.ImageTags}}</span>
+        <input type="text" id="add_tag"> <button type="button" onclick="addTag()">Add Tag</button><br>
+        <span id="story">{{.ImageStory}}</span>
+        <input type="text" id="add_story"> <button type="button" onclick="addStory()">Add Story</button>
     </div>
-    <div id="allmap"></div>
-    <div id="photo-list"></div>
-</body>
-</html>
-
-<script type="text/javascript">
-	var map = new BMap.Map("allmap");          
-	map.centerAndZoom("珠海", 12);
-    map.addControl(new BMap.ScaleControl({anchor: BMAP_ANCHOR_TOP_LEFT}));        
-	map.addControl(new BMap.NavigationControl());     
-	map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_SMALL}));
-
-    //单击获取点击的经纬度
-	map.addEventListener("click",function(e){
-        document.getElementById('search_lat').value = e.point.lat;
-        document.getElementById('search_lon').value = e.point.lng;
-	});
-
-    var local = new BMap.LocalSearch(map, {
-		renderOptions:{map: map}
-	});
-
-    function searchMap() {
-        place = document.getElementById('search_place').value;
-        local.search(place);
-    }
-
-    function query() {
-        var lat = document.getElementById('search_lat').value;
-        var lon = document.getElementById('search_lon').value;
-        var radius = document.getElementById('search_radius').value;
-        var keywords = document.getElementById('search_keywords').value;
-        var startTime = document.getElementById('search_time_start').value;
-        var endTime = document.getElementById('search_time_end').value;
-        var q = '?lat=' + lat + '&lon=' + lon + '&r=' + radius + '&kw=' + keywords + '&start=' + startTime + '&end=' + endTime;
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'api/photos' + q);
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var html = '<table><tr><th>sha1</th><th>path</th><th>time</th></tr>'
-                var result = JSON.parse(xhr.responseText);
-                for (var i = 0; i < result.photos.length; i++) {
-                    var photo = result.photos[i]
-                    html += '<tr><td>'+ photo.sha1 + '</td><td>'+ photo.path + '</td><td>' + photo.time + '</td></tr>';
-                }
-                html += '</table>'
-                document.getElementById('photo-list').innerHTML = html;
-            }
-        };
-        xhr.send();
-    }
-</script>
+</div>
